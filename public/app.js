@@ -23,7 +23,7 @@ async function fetchData() {
     const cardsContainer = document.getElementById('cards');
     const overallStatus = document.getElementById('overall-status');
     const lastUpdated = document.getElementById('last-updated');
-    lastUpdated.textContent = "Last Updated: " + data[0].windowEndTime;
+    lastUpdated.textContent =  "Last Refreshed: " + new Date().toLocaleTimeString();
 
     cardsContainer.innerHTML = '';
 
