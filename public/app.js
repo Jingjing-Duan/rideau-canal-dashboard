@@ -23,7 +23,7 @@ async function fetchData() {
     const cardsContainer = document.getElementById('cards');
     const overallStatus = document.getElementById('overall-status');
     const lastUpdated = document.getElementById('last-updated');
-    lastUpdated.textContent = "Last Updated: " + data[0].windowEndTime;
+    lastUpdated.textContent = "Last Updated: " +   new Date(data[0].windowEndTime).toLocaleTimeString();
 
     cardsContainer.innerHTML = '';
 
@@ -96,5 +96,93 @@ async function fetchData() {
   }
 }
 
+async function fetchTrendData() {
+  try {
+    const response = await fetch('/api/trends/last-hour');
+    const data = await response.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      return;
+    }
+
+    renderTrendChart(data);
+  } catch (error) {
+    console.error('Error fetching trend data:', error);
+  }
+}
+
+function renderTrendChart(data) {
+  const ctx = document.getElementById('trendChart').getContext('2d');
+
+  const locations = [...new Set(data.map(item => item.location))];
+  const labels = [...new Set(data.map(item => item.windowEndTime))].sort();
+
+  const datasets = locations.map(location => {
+    const points = labels.map(label => {
+      const match = data.find(item =>
+        item.location === location && item.windowEndTime === label
+      );
+      return match ? match.avgIceThickness : null;
+    });
+
+    return {
+    label: location,
+    data: points,
+    fill: false,
+    tension: 0.3,
+    spanGaps: true
+    };
+  });
+
+  if (chart) {
+    chart.destroy();
+  }
+
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels.map(label =>
+        new Date(label).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      ),
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        title: {
+          display: true,
+          text: 'Average Ice Thickness by Location - Last Hour'
+        }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Time'
+          }
+        },
+        y: {
+        title: {
+            display: true,
+            text: 'Avg Ice Thickness (cm)'
+        },
+        min: 20,
+        max: 40
+        }
+      }
+    }
+  });
+}
+
 fetchData();
-setInterval(fetchData, 30000);
+fetchTrendData();   // ✅ 加在这里
+
+
+setInterval(() => {
+  fetchData();
+  fetchTrendData(); // ✅ 再加这里
+}, 30000);

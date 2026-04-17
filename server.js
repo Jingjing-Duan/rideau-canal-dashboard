@@ -40,7 +40,29 @@ app.get('/api/data', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch data' });
   }
 });
+app.get('/api/trends/last-hour', async (req, res) => {
+  try {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
+    const querySpec = {
+      query: `
+        SELECT c.location, c.windowEndTime, c.avgIceThickness
+        FROM c
+        WHERE c.windowEndTime >= @oneHourAgo
+        ORDER BY c.windowEndTime ASC
+      `,
+      parameters: [
+        { name: '@oneHourAgo', value: oneHourAgo }
+      ]
+    };
+
+    const { resources } = await container.items.query(querySpec).fetchAll();
+    res.json(resources);
+  } catch (error) {
+    console.error('Error reading trend data from Cosmos DB:', error.message);
+    res.status(500).json({ error: 'Failed to fetch trend data' });
+  }
+});
 app.listen(process.env.PORT, () => {
   console.log(`Server running at http://localhost:${process.env.PORT}`);
 });
