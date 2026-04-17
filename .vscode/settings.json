@@ -1,0 +1,8 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/50e7699c-94b9-43a7-a21c-34d7a59e2715/resourceGroups/rideau-canal-rg/providers/Microsoft.Web/sites/rideau-dashboard-123",
+    "appService.deploySubpath": "."
+}
